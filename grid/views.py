@@ -1,40 +1,31 @@
 from django.views.generic import ListView
 from django.views.generic import DetailView
-from braces import views
+from django.contrib.auth.decorators import login_required
 
 from .models import List
 from .models import Person
 from .models import Template
 
 
-class ListListView(
-        views.LoginRequiredMixin,
-        ListView):
+# @login_required()
+class ListListView(ListView):
     queryset = List.objects.all()
     context_object_name = 'lists'
 
 
-class PersonListView(
-        views.LoginRequiredMixin,
-        ListView):
+class PersonListView(ListView):
     queryset = Person.objects.all()
     context_object_name = 'people'
 
 
-class PersonDetailView(
-        views.LoginRequiredMixin,
-        DetailView):
+class PersonDetailView(DetailView):
     model = Person
 
 
-class TemplateListView(
-        views.LoginRequiredMixin,
-        ListView):
+class TemplateListView(ListView):
     queryset = Template.objects.all()
     context_object_name = 'templates'
 
 
-class TemplateDetailView(
-        views.LoginRequiredMixin,
-        DetailView):
+class TemplateDetailView(DetailView):
     model = Template

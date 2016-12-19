@@ -60,7 +60,15 @@ class ListAdmin(ImportExportActionModelAdmin):
     ordering = ('title', 'description')
 
 
+class TemplateAdmin(ImportExportActionModelAdmin):
+    list_display = ('title', 'template_file', 'template_email', 'author', 'created_at')
+    list_filter = ('title',)
+    list_display_links = ('title',)
+    search_fields = ('title',)
+    ordering = ('title',)
+
+
 admin.site.register(List, ListAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Comment, CommentAdmin)
-admin.site.register(Template)
+admin.site.register(Template, TemplateAdmin)
