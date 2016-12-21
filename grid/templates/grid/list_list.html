@@ -1,0 +1,15 @@
+{% extends "_layouts/base.html"  %}
+
+{% block content %}
+{% for object in object_list %}
+<h2>
+  {{object.pk}}
+</h2>
+<h2>
+  <a href="{{ object.get_absolute_url }}">
+    {{object.title}}
+  </a>
+  {{ object.contact_count }}
+</h2>
+{% endfor %}
+{% endblock %}

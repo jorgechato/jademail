@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% load static from staticfiles %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Jorge Chato"/>
+    <meta name="Description" content="Email assistant to help you to send a bunch of emails from your account. This is NOT set for advertisement or SEO, it uses your own email and credentials to send emails."/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#191919"/>
+    <base href="/" target=""/>
+    <link rel="icon" href="{%  static 'img/favicon.png' %}">
+    <title>{% block title %}{{ 'jademail' | upper }}{% endblock %}</title>
+    {% block head%}
+    <link rel="stylesheet" type="text/css" href="{% static 'style/base.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    {% endblock %}
+  </head>
+  <body>
+    {% include "_modules/messages.html" %}
+    {% block content%}
+    {% endblock %}
+
+    <footer>
+      {% block footer%}
+      {% endblock %}
+    </footer>
+  </body>
+</html>

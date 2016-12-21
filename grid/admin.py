@@ -20,7 +20,7 @@ class CommentAdminForm(forms.ModelForm):
 class CommentAdmin(ImportExportActionModelAdmin):
     form = CommentAdminForm
 
-    list_display = ('title', 'created_at', 'get_content')
+    list_display = ('user', 'title', 'created_at', 'get_content')
     readonly_fields = ('created_at',)
     list_filter = ('person_id', 'title')
     list_display_links = ('title',)
@@ -41,8 +41,7 @@ class CommentInline(admin.StackedInline):
 
 
 class PersonAdmin(ImportExportActionModelAdmin):
-    # TODO: tags_id searchable, filtered and displayed
-    list_display = ('email', 'name', 'last_name', 'mobile', 'web',
+    list_display = ('user', 'email', 'name', 'last_name', 'mobile', 'web',
             'linked_in', 'facebook', 'email_sent')
     list_filter = ('name', 'last_name', 'lists_id')
     list_display_links = ('name', 'email')
@@ -53,7 +52,7 @@ class PersonAdmin(ImportExportActionModelAdmin):
 
 
 class ListAdmin(ImportExportActionModelAdmin):
-    list_display = ('title', 'description')
+    list_display = ('user', 'title', 'description', 'template')
     list_filter = ('title',)
     list_display_links = ('title',)
     search_fields = ('title',)
@@ -61,7 +60,7 @@ class ListAdmin(ImportExportActionModelAdmin):
 
 
 class TemplateAdmin(ImportExportActionModelAdmin):
-    list_display = ('title', 'template_file', 'template_email', 'author', 'created_at')
+    list_display = ('user', 'title', 'template_file', 'template_email', 'created_at')
     list_filter = ('title',)
     list_display_links = ('title',)
     search_fields = ('title',)

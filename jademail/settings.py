@@ -22,8 +22,10 @@ INSTALLED_APPS = [
         'django.contrib.messages',
         'django.contrib.staticfiles',
 
+        'sendgrid',
         'ckeditor',
         'import_export',
+        'crispy_forms',
         'grid',
         ]
 
@@ -39,6 +41,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'jademail.urls'
 
+LOGIN_REDIRECT_URL = 'grid:home'
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
 TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -52,6 +57,8 @@ TEMPLATES = [
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    'django.template.context_processors.media',
+                    'django.template.context_processors.static',
                     ],
                 },
             },
@@ -136,6 +143,10 @@ CKEDITOR_CONFIGS = {
         }
 CKEDITOR_UPLOAD_SLUGIFY_FILENAME = True
 CKEDITOR_ALLOW_NONIMAGE_FILES = False
+CKEDITOR_JQUERY_URL = "https://code.jquery.com/jquery-3.1.1.min.js"
+
+# 10MB - 10485760
+MAX_UPLOAD_SIZE = "10485760"
 
 try:
     from local_settings import *
