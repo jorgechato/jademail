@@ -29,4 +29,5 @@ urlpatterns = [
 
         # send email
         url(r'^send/(?P<tp_pk>[-\w]+)/(?P<to_pk>[-\w]+)/$', views.SendEmailView.as_view(), name='send_email'),
+        url(r'^email/$', views.CustomEmailView.as_view(), name='custom_email'),
         ]

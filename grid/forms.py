@@ -7,6 +7,37 @@ from ckeditor.widgets import CKEditorWidget
 from . import models
 
 
+class EmailForm(forms.Form):
+    name = forms.CharField()
+    email = forms.EmailField()
+    subject = forms.CharField()
+    template = forms.ModelChoiceField(queryset=models.Template.objects.all())
+    content = forms.CharField(widget=CKEditorWidget())
+    attachment = forms.FileField(required=False)
+
+    class Meta:
+        fields = ('name', 'email', 'subject', 'template', 'content', 'attachment')
+        fields_required = ['name', 'email', 'content', 'template', 'subject']
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(EmailForm, self).__init__(*args, **kwargs)
+        self.fields['template'].queryset = models.Template.objects.filter(
+                    user=self.request.user)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'name',
+            'email',
+            'subject',
+            'template',
+            'content',
+            'attachment',
+            ButtonHolder(
+                Submit('send', 'Send', css_class='btn-primary')
+                )
+            )
+
+
 class ListForm(forms.ModelForm):
     class Meta:
         fields = ('title', 'template', 'description')

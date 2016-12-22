@@ -2,17 +2,19 @@ import base64
 import sendgrid
 from django.views.generic import ListView
 from django.views.generic import DetailView
+from django.views.generic import FormView
 from django.views.generic import CreateView
 from django.views.generic import UpdateView
 from django.views.generic import RedirectView
 from django.http import Http404
 from django.core.urlresolvers import reverse_lazy
-from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.contrib import messages
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 from sendgrid.helpers.mail import Email, Content, Mail, Personalization, Attachment
 from braces import views
+from slugify import slugify
 
 from .models import List
 from .models import Person
@@ -26,8 +28,32 @@ class RestrictToOwnerMixin(views.LoginRequiredMixin):
         return self.model.objects.filter(user=self.request.user)
 
 
+class EmailParse():
+
+    def render_body(self, to, path):
+        f = open(path)
+        body = ""
+
+        for line in f:
+            body += line.replace('{{TO}}', to)
+        f.close()
+
+        return body
+
+    def attach_file(self, f, ext, slug, title):
+        attachment = Attachment()
+        attachment.set_content(base64.b64encode(f.read()))
+        attachment.set_type("application/"+ext)
+        attachment.set_filename(slug+"."+ext)
+        attachment.set_disposition("attachment")
+        attachment.set_content_id(title)
+
+        return attachment
+
+
 class SendEmailView(
         views.LoginRequiredMixin,
+        EmailParse,
         RedirectView):
 
     model = Template
@@ -39,7 +65,7 @@ class SendEmailView(
             setattr(self, key, value)
 
     def get_redirect_url(self, *args, **kwargs):
-        return reverse('grid:people_detail', kwargs={'slug': self.person.slug})
+        return reverse_lazy('grid:people_detail', kwargs={'slug': self.person.slug})
 
     def get_object(self, tp_pk):
         try:
@@ -64,27 +90,6 @@ class SendEmailView(
         else:
             return person
 
-    def render_body(self, to):
-        f = open(self.template.template_email.path)
-        body = ""
-
-        for line in f:
-            body += line.replace('{{TO}}', to)
-        f.close()
-
-        return body
-
-    def attach_file(self):
-        attachment = Attachment()
-        with open(self.template.attachment.path, "rb") as f:
-            attachment.set_content(base64.b64encode(f.read()))
-            attachment.set_type("application/pdf")
-            attachment.set_filename(self.template.slug+".pdf")
-            attachment.set_disposition("attachment")
-            attachment.set_content_id(self.template.title)
-
-        return attachment
-
     def get(self, request, *args, **kwargs):
         self.template = self.get_object(kwargs.get('tp_pk'))
         self.person = self.get_person(kwargs.get('to_pk'), kwargs.get('tp_pk'))
@@ -97,11 +102,15 @@ class SendEmailView(
         personalization.add_to(Email(self.person.email))
         mail.add_personalization(personalization)
 
-        body = self.render_body(self.person.name)
+        body = self.render_body(self.person.name, self.template.template_email.path)
         mail.add_content(Content("text/html", body))
 
         if self.template.attachment:
-            mail.add_attachment(self.attach_file())
+            path = self.template.attachment.path
+            ext = path.split('.')[-1]
+            with open(path, "rb") as f:
+                mail.add_attachment(self.attach_file(
+                    f, ext, self.template.slug, self.template.title))
 
         self.sg.client.mail.send.post(request_body=mail.get())
         messages.info(
@@ -129,11 +138,18 @@ class ListListView(
 class ListCreateView(
         views.LoginRequiredMixin,
         views.SetHeadlineMixin,
+        views.FormMessagesMixin,
         CreateView):
 
     headline = 'Create'
     form_class = forms.ListForm
     model = List
+    form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_valid_message(self):
+        return u"""You have just <strong>{0}</strong> the list
+               <strong>{1.title}</strong> successfully
+               """.format(self.headline, self.object)
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -145,11 +161,18 @@ class ListCreateView(
 class ListUpdateView(
         RestrictToOwnerMixin,
         views.SetHeadlineMixin,
+        views.FormMessagesMixin,
         UpdateView):
 
     headline = 'Edit'
     form_class = forms.ListForm
     model = List
+    form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_valid_message(self):
+        return u"""You have just <strong>{0}</strong> the list
+               <strong>{1.title}</strong> successfully
+               """.format(self.headline, self.object)
 
 
 class PersonRemoveView(
@@ -178,7 +201,8 @@ class PersonRemoveView(
         messages.warning(
                 request,
                 """
-                <strong>{0.email}</strong> was removed from your contacts
+                The contact <strong>{0.email}</strong> was removed from
+                your contacts
                 """.format(self.object))
         self.object.delete()
         return super(PersonRemoveView, self).get(request, *args, **kwargs)
@@ -212,11 +236,18 @@ class PersonDetailView(
 class PersonCreateView(
         views.LoginRequiredMixin,
         views.SetHeadlineMixin,
+        views.FormMessagesMixin,
         CreateView):
 
     headline = 'Create'
     form_class = forms.PersonForm
     model = Person
+    form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_valid_message(self):
+        return u"""You have just <strong>{0}</strong> the contact
+               <strong>{1.email}</strong> successfully
+               """.format(self.headline, self.object)
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -228,11 +259,18 @@ class PersonCreateView(
 class PersonUpdateView(
         RestrictToOwnerMixin,
         views.SetHeadlineMixin,
+        views.FormMessagesMixin,
         UpdateView):
 
     headline = 'Edit'
     form_class = forms.PersonForm
     model = Person
+    form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_valid_message(self):
+        return u"""You have just <strong>{0}</strong> the contact
+               <strong>{1.email}</strong> successfully
+               """.format(self.headline, self.object)
 
 
 class TemplateListView(
@@ -253,11 +291,18 @@ class TemplateDetailView(
 class TemplateCreateView(
         views.LoginRequiredMixin,
         views.SetHeadlineMixin,
+        views.FormMessagesMixin,
         CreateView):
 
     headline = 'Create'
     form_class = forms.TemplateForm
     model = Template
+    form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_valid_message(self):
+        return u"""You have just <strong>{0}</strong> the template
+               <strong>{1.title}</strong> successfully
+               """.format(self.headline, self.object)
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -269,8 +314,81 @@ class TemplateCreateView(
 class TemplateUpdateView(
         RestrictToOwnerMixin,
         views.SetHeadlineMixin,
+        views.FormMessagesMixin,
         UpdateView):
 
     headline = 'Edit'
     form_class = forms.TemplateForm
     model = Template
+    form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_valid_message(self):
+        return u"""You have just <strong>{0}</strong> the template
+               <strong>{1.title}</strong> successfully
+               """.format(self.headline, self.object)
+
+
+class CustomEmailView(
+        views.LoginRequiredMixin,
+        views.FormMessagesMixin,
+        EmailParse,
+        FormView):
+
+    form_class = forms.EmailForm
+    template_name = "email_form.html"
+    form_invalid_message = _(u'There was an error in the process')
+    success_url = reverse_lazy('grid:custom_email')
+
+    def __init__(self, **kwargs):
+        self.sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def get_form_kwargs(self):
+        kwargs = super(CustomEmailView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+    def get_form_valid_message(self):
+        return u"""You have just send an email to <strong>{}</strong>
+               with the subject <strong>{}</strong>
+               """.format(self.email, self.subject)
+
+    def render_content(self, text, content, title):
+        return text.replace('{{TITLE}}', title).replace('{{CONTENT}}', content)
+
+    def form_valid(self, form):
+        self.template = form.cleaned_data['template']
+        self.email = form.cleaned_data['email']
+        self.subject = form.cleaned_data['subject']
+
+        mail = Mail()
+        mail.set_from(Email(self.request.user.email))
+        mail.set_subject(self.subject)
+
+        personalization = Personalization()
+        personalization.add_to(Email(self.email))
+        mail.add_personalization(personalization)
+
+        body_personalized = self.render_body(
+                form.cleaned_data['name'],
+                self.template.template_file.path)
+        body = self.render_content(
+                body_personalized,
+                form.cleaned_data['content'],
+                self.subject)
+        mail.add_content(Content("text/html", body))
+
+        if form.cleaned_data['attachment']:
+            file_name = form.cleaned_data['attachment'].name
+            ext = file_name.split('.')[-1]
+            with form.cleaned_data['attachment'] as f:
+                mail.add_attachment(self.attach_file(
+                    f, ext,
+                    slugify(file_name),
+                    self.subject))
+
+        self.sg.client.mail.send.post(request_body=mail.get())
+
+        return super(CustomEmailView, self).form_valid(form)
