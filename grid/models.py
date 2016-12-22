@@ -20,14 +20,15 @@ def content_file_name(instance, filename, prefix=""):
 class Template(models.Model):
     title = models.CharField(max_length=140, unique=True)
     content = RichTextField()
-    template_file = models.FileField(upload_to=content_file_name,
-                    blank=True,
-                    default='base-email-template.html')
+    template_file = models.FileField(upload_to=content_file_name)
     attachment = models.FileField(upload_to=content_file_name, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(max_length=340, blank=True, editable=False)
     user = models.ForeignKey(User, related_name='templates', on_delete=models.CASCADE)
     template_email = models.FileField(blank=True, editable=False)
+
+    def __str__(self):
+        return self.title
 
     def __unicode__(self):
         return unicode(self.slug) or unicode(self.template_email)
@@ -63,7 +64,7 @@ class List(models.Model):
     template = models.ForeignKey(Template, related_name='lists')
 
     def __str__(self):
-        return self.slug
+        return self.title
 
     def __unicode__(self):
         return unicode(self.slug)

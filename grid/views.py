@@ -65,12 +65,13 @@ class SendEmailView(
             setattr(self, key, value)
 
     def get_redirect_url(self, *args, **kwargs):
-        return reverse_lazy('grid:people_detail', kwargs={'slug': self.person.slug})
+        return reverse_lazy('grid:people_detail',
+                kwargs={'slug': self.person.slug}) + "?q=" + kwargs.get('tp_pk')
 
     def get_object(self, tp_pk):
         try:
             template = self.model.objects.get(
-                    lists__pk=tp_pk,
+                    lists__slug=tp_pk,
                     user=self.request.user
                     )
         except Template.DoesNotExist:
@@ -82,7 +83,7 @@ class SendEmailView(
         try:
             person = Person.objects.get(
                     pk=to_pk,
-                    lists_id__pk=tp_pk,
+                    lists_id__slug=tp_pk,
                     user=self.request.user
                     )
         except Person.DoesNotExist:
@@ -120,19 +121,31 @@ class SendEmailView(
             """
             .format(self.person, self.template.title))
 
+        self.person.email_sent = True
+        self.person.save()
+
         return super(SendEmailView, self).get(request, *args, **kwargs)
 
 
 class ListListView(
         RestrictToOwnerMixin,
+        views.SetHeadlineMixin,
         ListView):
 
     model = List
+    headline = 'Lists'
+    paginate_by = 25
 
     def get_queryset(self):
         queryset = super(ListListView, self).get_queryset()
         queryset = queryset.annotate(contact_count=Count('contacts'))
         return queryset
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ListListView, self).get_context_data(*args, **kwargs)
+        context['path'] = reverse_lazy('grid:list_create')
+        context['active_tab'] = 'list'
+        return context
 
 
 class ListCreateView(
@@ -141,10 +154,15 @@ class ListCreateView(
         views.FormMessagesMixin,
         CreateView):
 
-    headline = 'Create'
+    headline = 'Create a new list'
     form_class = forms.ListForm
     model = List
     form_invalid_message = _(u'There was an error in the process')
+
+    def get_form_kwargs(self):
+        kwargs = super(ListCreateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def get_form_valid_message(self):
         return u"""You have just <strong>{0}</strong> the list
@@ -174,6 +192,11 @@ class ListUpdateView(
                <strong>{1.title}</strong> successfully
                """.format(self.headline, self.object)
 
+    def get_form_kwargs(self):
+        kwargs = super(ListUpdateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
 
 class PersonRemoveView(
         views.LoginRequiredMixin,
@@ -190,7 +213,7 @@ class PersonRemoveView(
                     pk=pk,
                     user=self.request.user
                     )
-        except List.DoesNotExist:
+        except Person.DoesNotExist:
             raise Http404
         else:
             return person
@@ -210,10 +233,12 @@ class PersonRemoveView(
 
 class PersonListView(
         RestrictToOwnerMixin,
+        views.SetHeadlineMixin,
         ListView):
 
     model = Person
     paginate_by = 25
+    headline = 'Contacts from'
 
     def get_queryset(self):
         queryset = super(PersonListView, self).get_queryset()
@@ -223,6 +248,7 @@ class PersonListView(
     def get_context_data(self, *args, **kwargs):
         context = super(PersonListView, self).get_context_data(*args, **kwargs)
         context['list_slug'] = self.kwargs['lists_id']
+        context['path'] = reverse_lazy('grid:people_create')
         return context
 
 
@@ -232,6 +258,11 @@ class PersonDetailView(
 
     model = Person
 
+    def get_context_data(self, *args, **kwargs):
+        context = super(PersonDetailView, self).get_context_data(*args, **kwargs)
+        context['q'] = self.request.GET.get('q')
+        return context
+
 
 class PersonCreateView(
         views.LoginRequiredMixin,
@@ -239,15 +270,21 @@ class PersonCreateView(
         views.FormMessagesMixin,
         CreateView):
 
-    headline = 'Create'
+    headline = 'Create a new contact'
     form_class = forms.PersonForm
     model = Person
     form_invalid_message = _(u'There was an error in the process')
+    success_url = reverse_lazy('grid:home')
 
     def get_form_valid_message(self):
         return u"""You have just <strong>{0}</strong> the contact
                <strong>{1.email}</strong> successfully
                """.format(self.headline, self.object)
+
+    def get_form_kwargs(self):
+        kwargs = super(PersonCreateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -266,19 +303,38 @@ class PersonUpdateView(
     form_class = forms.PersonForm
     model = Person
     form_invalid_message = _(u'There was an error in the process')
+    success_url = reverse_lazy('grid:home')
 
     def get_form_valid_message(self):
         return u"""You have just <strong>{0}</strong> the contact
                <strong>{1.email}</strong> successfully
                """.format(self.headline, self.object)
 
+    def get_form_kwargs(self):
+        kwargs = super(PersonUpdateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
 
 class TemplateListView(
         RestrictToOwnerMixin,
+        views.SetHeadlineMixin,
         ListView):
 
     model = Template
     paginate_by = 25
+    headline = 'Templates'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TemplateListView, self).get_context_data(*args, **kwargs)
+        context['path'] = reverse_lazy('grid:template_create')
+        context['active_tab'] = 'template'
+        return context
+
+    def get_queryset(self):
+        queryset = super(TemplateListView, self).get_queryset()
+        queryset = queryset.annotate(list_count=Count('lists'))
+        return queryset
 
 
 class TemplateDetailView(
@@ -294,7 +350,7 @@ class TemplateCreateView(
         views.FormMessagesMixin,
         CreateView):
 
-    headline = 'Create'
+    headline = 'Create a new template'
     form_class = forms.TemplateForm
     model = Template
     form_invalid_message = _(u'There was an error in the process')
@@ -331,9 +387,11 @@ class TemplateUpdateView(
 class CustomEmailView(
         views.LoginRequiredMixin,
         views.FormMessagesMixin,
+        views.SetHeadlineMixin,
         EmailParse,
         FormView):
 
+    headline = 'Send a custom message'
     form_class = forms.EmailForm
     template_name = "email_form.html"
     form_invalid_message = _(u'There was an error in the process')
@@ -344,6 +402,11 @@ class CustomEmailView(
 
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(CustomEmailView, self).get_context_data(*args, **kwargs)
+        context['active_tab'] = 'email'
+        return context
 
     def get_form_kwargs(self):
         kwargs = super(CustomEmailView, self).get_form_kwargs()

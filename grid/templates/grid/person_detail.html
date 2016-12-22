@@ -1,5 +1,51 @@
 {% extends "_layouts/base.html"  %}
 
 {% block content %}
-{{ object.name }}
+<div class="panel panel-default">
+
+  <div class="panel-heading">
+    <h2>
+      {{ object.name | title }}
+      {% if object.last_name %}
+      {{ object.last_name | title }}
+      {% endif %}
+    </h2>
+  </div>
+  <div class="panel-body">
+    <strong>Email: </strong>{{ object.email }}
+    {% if object.email_sent %}
+    <span class="label label-success">{{ 'Send'|upper }}</span>
+    {% else %}
+    <span class="label label-danger">{{ 'Not send'|upper }}</span>
+    {% endif %}
+    <div class="pull-right">
+      <a href="{% url 'grid:people_edit' object.slug %}" class="btn btn-default glyphicon glyphicon-pencil"></a>
+      <a href="{% url 'grid:send_email' q object.pk %}" class="btn btn-primary glyphicon glyphicon-send"> Send email</a>
+    </div>
+  </div>
+  <div class="panel-body">
+    <strong>Web: </strong>{{ object.web }}
+  </div>
+  <div class="panel-body">
+    <strong>Mobile: </strong>{{ object.mobile }}
+  </div>
+  <div class="panel-body">
+    <strong>Linkedin: </strong>{{ object.linked_in }}
+  </div>
+  <div class="panel-body">
+    <strong>Facebook: </strong>{{ object.facebook }}
+  </div>
+  <div class="panel-body">
+    <strong>Address: </strong>{{ object.street }}
+  </div>
+  <div class="panel-body">
+    <strong>Lists: </strong>
+    {% for list in object.lists_id.all %}
+    {{ list.title }}, 
+    {% endfor %}
+  </div>
+</div>
+<div class=" pull-right">
+  <a href="{% url 'grid:people_delete' object.pk %}" class="btn btn-danger glyphicon glyphicon-trash"></a>
+</div>
 {% endblock %}

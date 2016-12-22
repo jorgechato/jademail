@@ -25,15 +25,16 @@ class EmailForm(forms.Form):
         self.fields['template'].queryset = models.Template.objects.filter(
                     user=self.request.user)
         self.helper = FormHelper()
+        self.helper.form_class = 'col-md-9 col-md-offset-1'
         self.helper.layout = Layout(
             'name',
             'email',
             'subject',
             'template',
-            'content',
             'attachment',
+            'content',
             ButtonHolder(
-                Submit('send', 'Send', css_class='btn-primary')
+                Submit('send', 'Send', css_class='btn btn-block btn-default')
                 )
             )
 
@@ -44,14 +45,18 @@ class ListForm(forms.ModelForm):
         model = models.List
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
         super(ListForm, self).__init__(*args, **kwargs)
+        self.fields['template'].queryset = models.Template.objects.filter(
+                    user=self.request.user)
         self.helper = FormHelper()
+        self.helper.form_class = 'col-md-9 col-md-offset-1'
         self.helper.layout = Layout(
             'title',
             'template',
             'description',
             ButtonHolder(
-                Submit('send', 'Send', css_class='btn-primary')
+                Submit('send', 'Send', css_class='btn btn-block btn-default')
                 )
             )
 
@@ -63,8 +68,12 @@ class PersonForm(forms.ModelForm):
         model = models.Person
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
         super(PersonForm, self).__init__(*args, **kwargs)
+        self.fields['lists_id'].queryset = models.List.objects.filter(
+                    user=self.request.user)
         self.helper = FormHelper()
+        self.helper.form_class = 'col-md-9 col-md-offset-1'
         self.helper.layout = Layout(
             'name',
             'last_name',
@@ -76,7 +85,7 @@ class PersonForm(forms.ModelForm):
             'lists_id',
             'street',
             ButtonHolder(
-                Submit('send', 'Send', css_class='btn-primary')
+                Submit('send', 'Send', css_class='btn btn-block btn-default')
                 )
             )
 
@@ -89,13 +98,14 @@ class TemplateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TemplateForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_class = 'col-md-9 col-md-offset-1'
         self.helper.layout = Layout(
             'title',
-            'content',
             'template_file',
             'attachment',
+            'content',
             ButtonHolder(
-                Submit('send', 'Send', css_class='btn-primary')
+                Submit('send', 'Send', css_class='btn btn-block btn-default')
                 )
             )
 
@@ -108,11 +118,12 @@ class CommentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(CommentForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_class = 'col-md-9 col-md-offset-1'
         self.helper.layout = Layout(
             'title',
             'content',
             'person_id',
             ButtonHolder(
-                Submit('send', 'Send', css_class='btn-primary')
+                Submit('send', 'Send', css_class='btn btn-block btn-default')
                 )
             )

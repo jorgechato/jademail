@@ -8,9 +8,11 @@ from .forms import LoginForm
 
 class LoginView(
         views.AnonymousRequiredMixin,
+        views.SetHeadlineMixin,
         generic.FormView):
 
     form_class = LoginForm
+    headline = 'Login'
     success_url = reverse_lazy('grid:home')
     template_name = 'accounts/login.html'
 

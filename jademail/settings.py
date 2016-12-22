@@ -9,6 +9,10 @@ DEBUG = True
 ALLOWED_HOSTS = [
         '0.0.0.0',
         'localhost',
+        'nas.jorgechato.com',
+        '192.168.1.20',
+        '192.168.1.21',
+        '192.168.1.11',
         ]
 
 

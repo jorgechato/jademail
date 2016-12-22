@@ -1,0 +1,27 @@
+<div id="navbar" class="navbar navbar-inverse" style="margin-bottom:0px!important; border-radius:0!important">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="{% url 'grid:home' %}">JadeMail</a>
+    </div>
+    {% if user.is_authenticated %}
+    <ul class="nav navbar-nav navbar-right">
+      <li class="{% if active_tab == 'list' %}active{% endif %}"><a href="{% url 'grid:home' %}">Lists</a></li>
+      <li class="{% if active_tab == 'template' %}active{% endif %}"><a href="{% url 'grid:template_list' %}">Templates</a></li>
+      <li class="{% if active_tab == 'email' %}active{% endif %}"><a href="{% url 'grid:custom_email' %}">Send Email</a></li>
+      <li><a href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+    {% endif %}
+  </div>
+</div>
+<div style="background:#00A86B!important;color:white!important;" class="jumbotron text-center">
+  <div class="container">
+    <h1>{{ headline }} {{ list_slug|title }}{{ object.name }}{{ object.title }}</h1>
+  </div>
+  {% if user.is_authenticated and not object and not form and active_tab != 'email'%}
+  <div style="margin:3em auto 0 auto;width:50px;height:50px;border: 3px dashed;border-radius: 50%;">
+    <a href="{{ path }}" style="color:white!important; with:100%; height:100%;">
+      <i class="glyphicon glyphicon-plus" style="margin-top: 25%;font-size: 1.3em;"></i>
+    </a>
+  </div>
+  {% endif %}
+</div>

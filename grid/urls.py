@@ -11,7 +11,7 @@ urlpatterns = [
         url(r'^templates/$', views.TemplateListView.as_view(), name='template_list'),
 
         # detail
-        url(r'^contact/(?P<slug>[-\w]+)/$', views.PersonDetailView.as_view(), name='people_detail'),
+        url(r'^contact/(?P<slug>[-\w]+)$', views.PersonDetailView.as_view(), name='people_detail'),
         url(r'^template/(?P<slug>[-\w]+)/$', views.TemplateDetailView.as_view(), name='template_detail'),
 
         # create

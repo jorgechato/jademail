@@ -9,18 +9,20 @@
     <meta name="theme-color" content="#191919"/>
     <base href="/" target=""/>
     <link rel="icon" href="{%  static 'img/favicon.png' %}">
-    <title>{% block title %}{{ 'jademail' | upper }}{% endblock %}</title>
+    <title>{% block title %}{{ headline }}{{ object.title }}{{ object.name }} - {{ 'jademail' | upper }}{% endblock %}</title>
     {% block head%}
-    <link rel="stylesheet" type="text/css" href="{% static 'style/base.css' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     {% endblock %}
   </head>
   <body>
-    {% include "_modules/messages.html" %}
-    {% block content%}
-    {% endblock %}
+    {% include "_modules/nav.html" %}
+    <div class="container">
+      {% include "_modules/messages.html" %}
+      {% block content%}
+      {% endblock %}
+    </div>
 
-    <footer>
+    <footer style="margin-top:10em;">
       {% block footer%}
       {% endblock %}
     </footer>
