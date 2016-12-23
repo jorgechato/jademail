@@ -36,7 +36,7 @@
         </a>
       </td>
       <td class="col-md-3">
-        <a href="{{ object.get_absolute_url }}?q={{ list_slug }}" class="btn btn-warning glyphicon glyphicon-eye-open"></a>
+        <a href="{{ object.get_absolute_url }}?q={{ list_slug }}" class="btn btn-primary glyphicon glyphicon-eye-open"></a>
         <a href="{% url 'grid:people_edit' object.slug %}" class="btn btn-default glyphicon glyphicon-pencil"></a>
         <a href="{% url 'grid:people_delete' object.pk %}" class="btn btn-danger glyphicon glyphicon-trash"></a>
       </td>

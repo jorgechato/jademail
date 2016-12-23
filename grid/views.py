@@ -274,7 +274,6 @@ class PersonCreateView(
     form_class = forms.PersonForm
     model = Person
     form_invalid_message = _(u'There was an error in the process')
-    success_url = reverse_lazy('grid:home')
 
     def get_form_valid_message(self):
         return u"""You have just <strong>{0}</strong> the contact
@@ -303,7 +302,6 @@ class PersonUpdateView(
     form_class = forms.PersonForm
     model = Person
     form_invalid_message = _(u'There was an error in the process')
-    success_url = reverse_lazy('grid:home')
 
     def get_form_valid_message(self):
         return u"""You have just <strong>{0}</strong> the contact

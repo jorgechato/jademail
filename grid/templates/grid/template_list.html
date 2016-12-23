@@ -28,8 +28,8 @@
         </a>
       </td>
       <td class="col-md-3">
+        <a href="{{ object.get_absolute_url }}" class="btn btn-primary glyphicon glyphicon-eye-open"></a>
         <a href="{% url 'grid:template_edit' object.slug %}" class="btn btn-default glyphicon glyphicon-pencil"></a>
-        <a href="{{ object.get_absolute_url }}" class="btn btn-warning glyphicon glyphicon-eye-open"></a>
       </td>
     </tr>
     {% endfor %}

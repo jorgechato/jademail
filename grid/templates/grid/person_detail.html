@@ -20,7 +20,9 @@
     {% endif %}
     <div class="pull-right">
       <a href="{% url 'grid:people_edit' object.slug %}" class="btn btn-default glyphicon glyphicon-pencil"></a>
+      {% if q %}
       <a href="{% url 'grid:send_email' q object.pk %}" class="btn btn-primary glyphicon glyphicon-send"> Send email</a>
+      {% endif %}
     </div>
   </div>
   <div class="panel-body">
