@@ -61,8 +61,10 @@ In the email template should be three variables *{{TITLE}} {{TO}} {{CONTENT}}*, 
 
 ## [Demo]()
 The demo does not include sending a message, the porpouse of the demo is just get confortable with the interface and see the template of the email.
-**User: ** demo
-**Pass: ** jademail
+
+__User: __ demo
+
+__Pass: __ jademail
 
 ## Project structure
 ```zsh

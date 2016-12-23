@@ -16,9 +16,11 @@
   <div class="panel-body">
     <strong>Content: </strong>{{ object.content | safe }}
   </div>
+  {% if object.attachment %}
   <div class="panel-body">
     <strong>Attachment: </strong><a href="{{ object.attachment.url }}">{{ object.attachment.url }}</a>
   </div>
+  {% endif %}
   <div class="panel-body">
     <strong>Template: </strong><a href="{{ object.template_file.url }}">{{ object.template_file.url }}</a>
   </div>

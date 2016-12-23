@@ -37,12 +37,11 @@ class Template(models.Model):
         self.slug = slugify(self.title)
         self.template_email.delete(save=False)
 
-        f = open(settings.BASE_DIR + self.template_file.url)
+        f = self.template_file.file
         template = ""
 
         for line in f:
             template += line.replace('{{TITLE}}', self.title).replace('{{CONTENT}}', self.content)
-        f.close()
 
         self.template_email = ContentFile(template)
         self.template_email.name = content_file_name(self, self.template_file.name, ".body")
